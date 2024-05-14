@@ -1,0 +1,72 @@
+{% comment %}
+  This is a Liquid template for Shopify.
+  Make sure to replace placeholders and adapt the code as needed.
+{% endcomment %}
+
+<button onclick="fetchAndDownload()">Download CSV</button>
+
+{% comment %}
+  Include PapaParse library
+{% endcomment %}
+{{ 'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js' | script_tag }}
+
+{% comment %}
+  Add your JavaScript logic within <script> tags
+{% endcomment %}
+<script defer>
+  function downloadCSV(data, filename) {
+    const csv = Papa.unparse(data);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+
+    const link = document.createElement('a');
+    if (navigator.msSaveBlob) {
+      // IE 10+
+      navigator.msSaveBlob(blob, filename);
+    } else {
+      // Other browsers
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  function fetchAndDownload() {
+    try {
+      // Define success callback
+      var onSuccess = function(lists) {
+        // Successfully fetched all lists 
+        console.log(lists, "list");
+
+        // Extracting required data for CSV
+        const csvData = lists.map(row => ({
+          ListName: row.lname,
+          ...row.listcontents[0] // Assuming there's at least one product in each list
+        }));
+
+        // Replace 'data.csv' with your desired filename
+        downloadCSV(csvData, 'data.csv');
+      }
+
+      // Define error callback
+      var onError = function(error) {
+        // Error is an xhrObject
+        console.log("Error while fetching all Lists", error);
+        // Handle error as needed
+      }
+
+      // Call `fetchLists` function
+      _swat.fetchLists({
+        callbackFn: onSuccess,
+        errorFn: onError
+      });
+    } catch (error) {
+      console.error('Error fetching or processing data:', error);
+      // Handle error as needed
+    }
+  }
+</script>
+

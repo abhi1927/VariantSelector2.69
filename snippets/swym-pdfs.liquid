@@ -1,0 +1,32 @@
+{% comment %} <script defer src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script defer>
+  async function mergePdfs(urls) {
+    const fetchPromises = urls.map(url => fetch(url).then(response => response.arrayBuffer()));
+    const buffers = await Promise.all(fetchPromises);
+
+    const pdfDocs = await Promise.all(buffers.map(buffer => window.PDFLib.PDFDocument.load(buffer)));
+
+    const mergedPdf = await window.PDFLib.PDFDocument.create();
+    for (const pdfDoc of pdfDocs) {
+      const pages = await mergedPdf.copyPages(pdfDoc, pdfDoc.getPageIndices());
+      pages.forEach(page => mergedPdf.addPage(page));
+    }
+
+    const mergedPdfBytes = await mergedPdf.save();
+
+    const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = 'merged.pdf';
+    link.click();
+  }
+
+  // Example usage
+  mergePdfs([
+    "https://cdn.shopify.com/s/files/1/0662/5633/9167/files/SOW_for_The_Skincare_Edit.pdf?v=1710326532",
+    "https://cdn.shopify.com/s/files/1/0662/5633/9167/files/SOW_for_Folio_fabrics_Feb_update.pdf?v=1710328131"
+  ])
+  .then(() => console.log('PDF files merged successfully'))
+  .catch(error => console.error('Error merging PDF files:', error));
+</script>
+ {% endcomment %}

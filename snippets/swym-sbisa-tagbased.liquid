@@ -1,0 +1,138 @@
+{% comment %} <script defer>
+  function swymCallbackFn(swat){
+    let oosArray = [];
+    document.addEventListener("change", () => {
+     toggleHideRestock();
+    });
+    
+    function toggleHideRestock () {
+      const restockAndTimer = document.getElementById("swym-timer-and-restock-parent");
+      let variantId = Number(window.location.href.split("variant=")[1]);
+      if (oosArray.includes(variantId)) {
+        restockAndTimer.classList.remove("swym-hide-container");
+      } else {
+        restockAndTimer.classList.add("swym-hide-container");
+      }
+    }
+    function checkIfVariantOOS (productJs) {
+     let variantArray = productJs.variants;
+        for (let i = 0; i < variantArray.length; i++) {
+         if (variantArray[i].available == false) {
+           oosArray.push(variantArray[i].id);
+         }
+       }
+     console.log(oosArray, "oosArray");
+    }
+
+   function appendToBisButton (formattedDate, timer) {
+    let swymBtns = document.querySelectorAll(".swym-btn-container.swym-inject");
+     
+      if (swymBtns.length > 1) {
+        swymBtn = swymBtns[1];
+        } else {
+          swymBtn = swymBtns[0];
+      }
+     
+      let finalDate = document.createElement("div");
+      finalDate.setAttribute("id", "swym-restock-date");
+       
+      let timerDiv = document.createElement("div");
+      timerDiv.setAttribute("id", "swym-restock-timer");
+       
+      let parentDiv = document.createElement("div");
+      parentDiv.setAttribute("id", "swym-timer-and-restock-parent");  
+      
+      parentDiv.appendChild(finalDate);
+      parentDiv.appendChild(timerDiv);
+     
+      finalDate.innerHTML += formattedDate;
+    
+       timerDiv.innerHTML += timer
+       swymBtn.appendChild(parentDiv);
+  }
+  
+  function formatDateAndCalculateTimeRemaining(restockDate) {
+    const date = new Date(restockDate);
+    
+    // Format the date as "dayth Month Year"
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    const formattedDate = date.toLocaleDateString('en', options);
+    
+    // Calculate the time remaining
+    const currentTime = new Date();
+    const timeRemaining = date.getTime() - currentTime.getTime();
+    
+    // Calculate the remaining days, hours, minutes, and seconds
+    const daysRemaining = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+    const hoursRemaining = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutesRemaining = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+    const secondsRemaining = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+    let finalDate = `Restocks on ${formattedDate}`;
+    let finalTimer = `Time Remaining: ${daysRemaining} days, ${hoursRemaining} hours, ${minutesRemaining} minutes`;
+    
+    console.log(`Formatted Date: ${formattedDate}`);
+    console.log(`Time Remaining: ${daysRemaining} days, ${hoursRemaining} hours, ${minutesRemaining} minutes, ${secondsRemaining} seconds`);
+    if (daysRemaining > 0) {
+      appendToBisButton(finalDate, finalTimer);
+    }
+    
+  }
+    
+  function getRestockData (productJsData) {
+     let productTags = productJsData.tags;
+      const keyword = "swymRestockDate";
+        const regex = new RegExp(`^${keyword}-\\d{2}/\\d{2}/\\d{4}$`);
+        const itemWithDate = productTags.find(item => regex.test(item));
+        
+        if (itemWithDate) {
+          const date = itemWithDate.split("-")[1];
+          console.log(date);
+          formatDateAndCalculateTimeRemaining(date);
+          } else {
+          console.log("Item with the keyword 'swymRestockDate' not found.");
+        }
+   }
+    
+   function fetchProductJs () {
+    const rawUrl = window.location.href.split("?")[0];
+     const productUrl = rawUrl + ".js";
+     fetch(productUrl)
+      .then((res) => res.json())
+      .then((productJson) => {
+        productData = productJson;
+        console.log(productData, "product data from fetch call");
+        getRestockData(productData);
+        checkIfVariantOOS(productData);
+        toggleHideRestock();
+      });
+   }
+    fetchProductJs();
+  }
+  if(!window.SwymCallbacks){
+    window.SwymCallbacks = [];
+  }
+  window.SwymCallbacks.push(swymCallbackFn);
+  </script>
+
+<style>
+  .swym-hide-container {
+    display: none !important;
+  }
+  div#swym-timer-and-restock-parent {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+  }
+  div#swym-restock-date {
+    font-weight: bold;
+  }
+  div#swym-restock-timer {
+    font-weight: bold;
+    margin-top: 10px;
+  }
+</style>
+
+
+
+   {% endcomment %}

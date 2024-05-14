@@ -1,0 +1,60 @@
+{% comment %}
+  Swym Wishlist needs the Product ID, Variant ID, and Product URL to function correctly,
+  These can be passed as parameters to your custom button.
+  
+  The button needs to be cut and pasted wherever relevant, PDP/Collections etc.
+  You may need to modify the data-product-id/data-variant-id/data-product-url attributes based
+  on your theme file. For ex - some theme files use card_product.id instead of product.id
+  
+  The script can remain in this liquid file, or can be moved to a .js Asset file and must be included
+  inside theme.liquid
+{% endcomment %}
+<button
+  id="swym-custom-button"
+  class="swym-button swym-heart swym-add-to-wishlist-view-product swym-loaded"
+  data-product-id="{{product.id}}"
+  data-variant-id="{{product.variants[0].id}}"
+  data-product-url="{{shop.url}}{{product.url}}"
+  data-custom-property=""
+></button>
+
+<script>
+  function onSwymLoadCallback(swat) {
+    // All custom code related to Swym should be pasted inside Swym callbacks. Sample custom button code below -
+
+    function performAddToWishlist(event) {
+      // Define the product object that Swym needs for add to wishlist action.
+      let product = {
+        epi: Number(event.target.getAttribute('data-variant-id')),
+        empi: Number(event.target.getAttribute('data-product-id')),
+        du: event.target.getAttribute('data-product-url'),
+        cprops: {
+          // You may add custom fields here.
+        },
+      };
+
+      // Add the "product" to the wishlist.
+      swat.addToWishList(
+        product,
+        function (response) {
+            //Success response
+          console.log('product successfully added to wishlist', response);
+        },
+        function (error) {
+            // Error response
+          console.log('there was an error adding the product to wishlist', error);
+        }
+      );
+    }
+
+    let myCustomButtons = document.querySelectorAll('#swym-custom-button');
+        myCustomButtons.forEach((customButton) => {
+        customButton.addEventListener('click', performAddToWishlist);
+        });
+  }
+  if (!window.SwymCallbacks) {
+    window.SwymCallbacks = [];
+  }
+
+  window.SwymCallbacks.push(onSwymLoadCallback);
+</script>
